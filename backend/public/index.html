@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Book Explorer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .book-card {
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      margin: 10px;
+      display: inline-block;
+      width: 180px;
+      vertical-align: top;
+      text-align: center;
+    }
+    img { width: 100px; height: 150px; object-fit: cover; }
+    .pagination { margin-top: 20px; }
+    button { margin: 5px; padding: 8px 12px; }
+  </style>
+</head>
+<body>
+  <h1>📚 Book Explorer</h1>
+  <div id="books"></div>
+  <div class="pagination">
+    <button onclick="prevPage()">⬅ Previous</button>
+    <span id="pageInfo"></span>
+    <button onclick="nextPage()">Next ➡</button>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    const limit = 5; // books per page
+    const API_URL = "http://localhost:5000/api/books";
+
+    async function loadBooks(page) {
+      const res = await fetch(`${API_URL}?page=${page}&limit=${limit}`);
+      const data = await res.json();
+
+      const booksDiv = document.getElementById("books");
+      booksDiv.innerHTML = "";
+
+      data.books.forEach(book => {
+        const card = document.createElement("div");
+        card.className = "book-card";
+        card.innerHTML = `
+          <img src="${book.thumbnailUrl}" alt="${book.title}" />
+          <h3>${book.title}</h3>
+          <p>💲 ${book.price}</p>
+          <p>⭐ ${book.rating}</p>
+          <a href="${book.detailUrl}" target="_blank">Details</a>
+        `;
+        booksDiv.appendChild(card);
+      });
+
+      document.getElementById("pageInfo").innerText =
+        `Page ${data.page} of ${data.totalPages}`;
+      
+      currentPage = data.page;
+    }
+
+    function nextPage() {
+      currentPage++;
+      loadBooks(currentPage);
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        loadBooks(currentPage);
+      }
+    }
+
+    // load first page
+    loadBooks(currentPage);
+  </script>
+</body>
+</html>
